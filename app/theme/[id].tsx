@@ -1,22 +1,16 @@
-// expo-router hook to read the route params (like the theme id)
 import { useLocalSearchParams } from "expo-router";
-// React Native components
-import { FlatList, Linking, StyleSheet, Text, View } from "react-native";
-// UI card from react-native-paper
-import { Card } from "react-native-paper";
-// our dummy data for themes
+import { FlatList, ScrollView, StyleSheet, Text, View } from "react-native";
+import AnalysisPanel from "../../components/AnalysisPanel";
+import EventCard from "../../components/EventCard";
 import { themes } from "../../data/dummyData";
 
-// 👇 This is the ONLY component in this file.
-// Name must be unique and exported as default.
 export default function ThemeDetailScreen() {
-  // grab the "id" from the URL (e.g. /theme/1 → id = "1")
+  // Get the theme ID from the route
   const { id } = useLocalSearchParams();
 
-  // find the theme object that matches the id
+  // Find the matching theme from dummy data
   const theme = themes.find((t) => t.id === id);
 
-  // fallback if theme not found
   if (!theme) {
     return (
       <View style={styles.container}>
@@ -26,44 +20,36 @@ export default function ThemeDetailScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      {/* Title + tags at the top */}
+    <ScrollView style={styles.container}>
+      {/* Overview */}
       <Text style={styles.title}>{theme.title}</Text>
-      <Text style={styles.tags}>Tags: {theme.tags.join(", ")}</Text>
+      <Text style={styles.overview}>{theme.overview}</Text>
 
-      {/* Section header */}
-      <Text style={styles.sectionTitle}>Timeline of Events</Text>
-
-      {/* FlatList to render each event in the timeline */}
+      {/* Chronology */}
+      <Text style={styles.sectionTitle}>Chronology of Events</Text>
       <FlatList
-        data={theme.timeline} // array of events
-        keyExtractor={(item, index) => index.toString()} // unique key per event
+        data={theme.chronology}
+        keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
-          <Card
-            style={styles.card}
-            // when you tap the card, open external article in browser
-            onPress={() => Linking.openURL(item.link)}
-          >
-            <Card.Content>
-              <Text style={styles.date}>{item.date}</Text>
-              <Text style={styles.event}>{item.event}</Text>
-              <Text style={styles.link}>Tap to read more →</Text>
-            </Card.Content>
-          </Card>
+          <EventCard date={item.date} event={item.event} link={item.link} />
         )}
       />
-    </View>
+
+      {/* Analysis */}
+      <Text style={styles.sectionTitle}>Analysis</Text>
+      <AnalysisPanel
+        stakeholders={theme.analysis.stakeholders}
+        faqs={theme.analysis.faqs}
+        future={theme.analysis.future}
+      />
+    </ScrollView>
   );
 }
 
-// 💅 Styles for layout and text
+// 💅 Styles
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: "#fff" },
-  title: { fontSize: 22, fontWeight: "bold", marginBottom: 8 },
-  tags: { fontSize: 14, color: "#666", marginBottom: 16 },
-  sectionTitle: { fontSize: 18, fontWeight: "600", marginBottom: 8 },
-  card: { marginBottom: 10, backgroundColor: "#f9f9f9" },
-  date: { fontSize: 14, fontWeight: "bold", marginBottom: 4 },
-  event: { fontSize: 16, marginBottom: 4 },
-  link: { fontSize: 12, color: "blue" },
+  title: { fontSize: 22, fontWeight: "bold", marginBottom: 10 },
+  overview: { fontSize: 16, marginBottom: 20, lineHeight: 22 },
+  sectionTitle: { fontSize: 18, fontWeight: "600", marginTop: 20, marginBottom: 10 },
 });
